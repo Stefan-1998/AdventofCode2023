@@ -1,6 +1,4 @@
 using System.Text.RegularExpressions;
-using System;
-using System.Runtime;
 
 namespace Day2{
     internal class Game

@@ -1,5 +1,4 @@
 using CommonFunctions;
-using System;
 using Day2;
 
 class Program{
@@ -29,5 +28,25 @@ class Program{
       }
     }
     Console.WriteLine($"The sum of all the game numbers is {sumOfGameNumbers}");
+
+    //puzzle 2
+
+    int sumOfGamePowers = 0;
+    foreach(var line in input)
+    {
+      Console.WriteLine(line);
+      var game = new Game(line);
+
+      int minimumAmountOfNeededBlueCubes = game.Sets.Max(t => t.NumberOfBlueCubes);
+      int minimumAmountOfNeededRedCubes = game.Sets.Max(t => t.NumberOfRedCubes);
+      int minimumAmountOfNeededGreenCubes = game.Sets.Max(t => t.NumberOfGreenCubes);
+      
+      int power = minimumAmountOfNeededBlueCubes * minimumAmountOfNeededGreenCubes * minimumAmountOfNeededRedCubes;
+      
+      sumOfGamePowers += power;
+      Console.WriteLine($"The game {game.GameNumber} has the power {power}!");
+      
+    }
+    Console.WriteLine($"The sum of all the game powers is {sumOfGamePowers}");
   }
 }
