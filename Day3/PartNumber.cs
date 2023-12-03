@@ -14,7 +14,7 @@ namespace Day3
         public int LinePositionEnd{get;init;}
     
     
-        public bool IsValidPartNumber(List<(int Line,int Position)> specialCharacterPositions)
+        public bool IsAdjacentToSpecialCharacter(List<(int Line,int Position)> specialCharacterPositions)
         {
             foreach(var specialCharacterPosition in specialCharacterPositions)
             {

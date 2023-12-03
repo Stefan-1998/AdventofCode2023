@@ -14,7 +14,7 @@ class Program{
     var partNumbers = GetPartNumbers(input);
     foreach(var partNumber in partNumbers)
     {
-      if(partNumber.IsValidPartNumber(specialCharacterPositions))
+      if(partNumber.IsAdjacentToSpecialCharacter(specialCharacterPositions))
       {
         sumOfPartNumbers += partNumber.Number;
       }
@@ -23,8 +23,37 @@ class Program{
 
     //puzzle 2
     var gearCharacterPositions = GetGearCharacterPositions(input);
+    
+    var gears = partNumbers.Where(t => t.IsAdjacentToSpecialCharacter(gearCharacterPositions)).ToList();
+    var sumOfGearRatios = GetSumOfGearRations(gears, gearCharacterPositions);
+    Console.WriteLine($"The sum of all the gearratios is {sumOfGearRatios}");
 
   }
+  static int GetSumOfGearRations(List<PartNumber> gears, List<(int Line, int Position)> gearCharacters)
+  {
+    int sumOfGearRatios = 0; 
+    foreach(var gearCharacter in gearCharacters)
+    {
+      int connectedGears = 0;
+      int gearRatio = 1;
+      foreach(var gear in gears)
+      {
+        if(gear.IsAdjacentToSpecialCharacter(new List<(int Line, int Position)>(){gearCharacter}))
+        {
+          connectedGears ++;
+          gearRatio *= gear.Number;
+        }
+      }
+      if(connectedGears >1)
+      {
+        sumOfGearRatios += gearRatio;
+        Console.WriteLine($"Two gears found with the gearration {gearRatio}");
+      }
+    }
+
+    return sumOfGearRatios;
+  }
+  
   static List<(int Line, int Position)> GetSpecialCharacterPositions(List<string> input)
   {
     var specialCharacterPositions = new List<(int Line, int Position)>();
@@ -50,7 +79,7 @@ class Program{
     {
         for(int j = 0; j< input[i].Length; j++)
         {
-          if(input[i][j]== "*")
+          if(input[i][j]== '*')
             specialCharacterPositions.Add((Line: i, Position: j));
         }
     }
