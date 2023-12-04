@@ -33,8 +33,7 @@ namespace Day4{
             {
                 if(WinningNumbers.Contains(number))
                 {
-                pairCounter++;
-                Console.Write($"{number} ");
+                    pairCounter++;
                 }
             }
             return pairCounter;
