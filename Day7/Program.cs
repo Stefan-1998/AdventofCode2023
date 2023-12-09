@@ -1,7 +1,5 @@
 using CommonFunctions;
-using System.Collections.Generic; 
-using System;
-using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 class Program{
   static void Main()
@@ -34,22 +32,26 @@ class Program{
       checked{totalWinnings+= i*cardWithBids[i-1].Bid;}
     }
     Console.WriteLine($"The total whinning is {totalWinnings}");
-    //liste einlesen mit tuple
-    //Anzahl der Karten kann ich leicht mit einer map feststellen
-    //Liste einfach sortieren mit einer function
-    //einfach 100 mal sortieren
-    //Kartenwert kann ich mit der Position in einer Liste rausfinden
-    //Kartenwert ist zweitranging -> Kombinationen wie Full House sind immer wichtiger
 
   }
-  public static readonly List<char> CardPossibilities = new List<char>(){'2', '3', '4', '5', '6', '7', '8', '9', 'T', 'J', 'Q', 'K', 'A' };
+  public static readonly List<char> CardPossibilities = new List<char>(){'J', '2', '3', '4', '5', '6', '7', '8', '9', 'T', 'Q', 'K', 'A' };
+  public enum PokerHands
+  {
+    FiveOfAKind=7,
+    FourOfAKind=6,
+    FullHouse=5,
+    ThreeOfAKind=4,
+    TwoPairs = 3,
+    OnePair =2,
+    HighestCard =1
+  }
   public static int SortByPokerRules((string Cards, int Bid) firstHand, (string Cards, int Bid) secondHand)
   {
     //return 0 => equal
     //return 1 => firstHand
     //return -1 => secondHand
-    int firstHandType = GetHandType(firstHand.Cards);
-    int secondHandType = GetHandType(secondHand.Cards);
+    int firstHandType = (int)GetHandType(firstHand.Cards);
+    int secondHandType = (int)GetHandType(secondHand.Cards);
     if(firstHandType > secondHandType)
       return 1;
     if(firstHandType < secondHandType)
@@ -66,18 +68,14 @@ class Program{
     }
     return 0;
   }
-  //5 of a kind => 7
-  //4 of a kind => 6
-  //full House  => 5
-  //3 of a kind => 4
-  //2 pairs => 3
-  //1 pairs => 2
-  //high card => 1
-  public static int GetHandType(string cards)
+
+  public static PokerHands GetHandType(string cards)
   {
     Dictionary<char,int> cardTypes = new Dictionary<char,int>();
     foreach(char card in cards)
     { 
+      if(card == 'J')
+        continue;
       if(cardTypes.ContainsKey(card))
       {
         cardTypes[card]++;
@@ -87,35 +85,56 @@ class Program{
       }
 
     }
-    int cardCounter=0;
-    foreach(KeyValuePair<char,int> amountOfCard in cardTypes)
+    int cardCounter= cardTypes.Values.Any() ? cardTypes.Values.Max():0;
+    var jokerRegex = new Regex(@"J");
+    var jokerAmount = jokerRegex.Matches(cards).Count;
+    if(jokerRegex.IsMatch(cards))
     {
-      if(amountOfCard.Value >cardCounter)
-      {
-        cardCounter= amountOfCard.Value;
-      }
+      return GetPokerHandWithJoker(jokerAmount, cardCounter, cardTypes.Count);
     }
-    //five of a kind
-    if(cardCounter == 5)
-      return 7;
-    //four of a kind
-    if(cardCounter == 4)
-      return 6;
-    //single
-    if(cardCounter == 1)
-      return 1;
-    //full fouse
-    if(cardTypes.Count ==2)
-      return 5;
-    //three of a kind
-    if(cardCounter == 3 && cardTypes.Count ==3)
-      return 4;
-    //pair
-    if(cardCounter == 2 &&  cardTypes.Count ==4)
-      return 2;
-    
-    //double pair
-    return 3;
+    return GetPokerHandWithOutJoker(cardCounter, cardTypes.Count);
+  }
+  static private PokerHands GetPokerHandWithJoker(int amountOfJokers, int highestDuplicateOfACardType, int amountOfDifferentCardsInHand){
+      return amountOfJokers switch 
+      {
+        //high card with joker
+        4 => PokerHands.FiveOfAKind,
+        3 when highestDuplicateOfACardType ==1 => PokerHands.FourOfAKind,
+        2 when highestDuplicateOfACardType ==1 => PokerHands.ThreeOfAKind,
+        1 when highestDuplicateOfACardType ==1 => PokerHands.OnePair,
+
+        //one pair
+        3 when highestDuplicateOfACardType ==2 => PokerHands.FiveOfAKind,
+        2 when highestDuplicateOfACardType ==2 => PokerHands.FourOfAKind,
+        1 when highestDuplicateOfACardType ==2 && amountOfDifferentCardsInHand == 3 => PokerHands.ThreeOfAKind,
+        
+        //two pair
+        1 when highestDuplicateOfACardType ==2 && amountOfDifferentCardsInHand == 2 => PokerHands.FullHouse,
+
+        //three of a kidn
+        1 when highestDuplicateOfACardType ==3 => PokerHands.FourOfAKind,
+        2 when highestDuplicateOfACardType ==3 => PokerHands.FiveOfAKind,
+
+        //four of a kind
+        1 when highestDuplicateOfACardType ==4 => PokerHands.FiveOfAKind,
+
+        5 => PokerHands.FiveOfAKind,
+        _ => throw new InvalidOperationException($"Unhandled case")
+      };
+  }
+  static private PokerHands GetPokerHandWithOutJoker(int highestDuplicateOfACardType, int amountOfDifferentCardsInHand){
+
+    return highestDuplicateOfACardType switch
+    {
+      5 => PokerHands.FiveOfAKind,
+      4 => PokerHands.FourOfAKind,
+      1 => PokerHands.HighestCard,
+      3 when  amountOfDifferentCardsInHand ==2 => PokerHands.FullHouse,
+      3 when  amountOfDifferentCardsInHand ==3 => PokerHands.ThreeOfAKind,
+      2 when  amountOfDifferentCardsInHand ==4 => PokerHands.OnePair,
+      _ => PokerHands.TwoPairs
+    };
   }
 
 }
+
