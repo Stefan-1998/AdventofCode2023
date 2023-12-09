@@ -16,7 +16,6 @@ class Program{
       var digitRegex = new Regex(@"[-]?\d+");
       var sequence = digitRegex.Matches(line).Select(x => long.Parse(x.Value)).ToList();
       var extraPolateValue = ExtraPolate(sequence);
-      Console.WriteLine($"{extraPolateValue} is the extra polated value for the sequence {line}");
       result += extraPolateValue;
 
     }
@@ -31,13 +30,7 @@ class Program{
     {
       substractedSequence.Add(sequence[i+1]-sequence[i]);
     }
-    foreach(var number in substractedSequence)
-    {
-      Console.Write($"{number} ");
-    }
-    Console.Write("\n");
     var extraPolate = ExtraPolate(substractedSequence);
-    Console.WriteLine($"Sub extra polated value is {extraPolate}");
     return sequence[sequence.Count()-1]+extraPolate; 
   }
 }
