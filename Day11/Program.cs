@@ -9,33 +9,43 @@ class Program{
     {
       Console.WriteLine(line);
     }
-    var expandedMap = ExpandMap(input);
-    Console.WriteLine();
-    Console.WriteLine();
-    foreach(var line in expandedMap)
-    {
-      Console.WriteLine(line);
-    }
+    var verticalSpaceExpansions = GetVerticalSpaceExpensions(input);
+    var horizontalSpaceExpensions = GetHorizontalSpaceExpensions(input);
+
     var galaxies = new List<(int XPosition, int YPosition)>();
 
-    for(int i=0; i< expandedMap.Count(); i++)
+    for(int i=0; i< input.Count(); i++)
     {
-      for(int j=0; j< expandedMap[0].Count();j++)
+      for(int j=0; j< input[0].Count();j++)
       {
-        if(expandedMap[i][j]=='#')
+        if(input[i][j]=='#')
           galaxies.Add((XPosition: j, YPosition: i));
       }
     }
-    Console.WriteLine(expandedMap.Count());
-    Console.WriteLine(expandedMap[0].Count());
     
+    long expensionRate = 1000000;
     long sumOfSteps = 0;
     for(int i=0; i<galaxies.Count();i++)
     {
       for(int j = i+1; j<galaxies.Count();j++)
       {
-        sumOfSteps += Math.Abs(galaxies[i].XPosition-galaxies[j].XPosition);
-        sumOfSteps += Math.Abs(galaxies[i].YPosition-galaxies[j].YPosition);
+        int amountOfVerticalSpace = 0;
+        if(galaxies[j].XPosition > galaxies[i].XPosition)
+          amountOfVerticalSpace = verticalSpaceExpansions.Where(t => galaxies[i].XPosition <t && t <galaxies[j].XPosition).Count();
+        else
+        {
+          amountOfVerticalSpace = verticalSpaceExpansions.Where(t => galaxies[j].XPosition <t && t <galaxies[i].XPosition).Count();
+        }
+        int amountOfHorizonalSpace = 0;
+        if(galaxies[j].YPosition > galaxies[i].YPosition)
+          amountOfHorizonalSpace = horizontalSpaceExpensions.Where(t => galaxies[i].YPosition <t && t <galaxies[j].YPosition).Count();
+        else
+        {
+          amountOfHorizonalSpace = horizontalSpaceExpensions.Where(t => galaxies[j].YPosition <t && t <galaxies[i].YPosition).Count();
+        }
+        
+        sumOfSteps += Math.Abs(galaxies[i].XPosition-galaxies[j].XPosition)+amountOfHorizonalSpace*(expensionRate-1);
+        sumOfSteps += Math.Abs(galaxies[i].YPosition-galaxies[j].YPosition)+amountOfVerticalSpace*(expensionRate-1);
       }
     }
 
@@ -44,23 +54,21 @@ class Program{
       
 
   }
-  static List<string> ExpandMap(List<string> originalMap)
+  static List<int> GetHorizontalSpaceExpensions(List<string> originalMap)
   {
-    var horizontalPositionsToAdd = new List<int>();
+    var horizontalSpaceExpensions = new List<int>();
     for(int i=0; i< originalMap.Count(); i++)
     {
       if(originalMap[i].Contains('#'))
         continue;
       
-      horizontalPositionsToAdd.Add(i);
+      horizontalSpaceExpensions.Add(i);
     }
-    horizontalPositionsToAdd.Reverse();
-
-    foreach(var lineNumber in horizontalPositionsToAdd)
-    {
-      originalMap.Insert(lineNumber, new string('.', originalMap[0].Count()));
-    }
-    var verticalPositionsToAdd = new List<int>();
+    return horizontalSpaceExpensions;
+  }
+  static List<int> GetVerticalSpaceExpensions(List<string> originalMap)
+  {
+    var verticalSpaceExpansions = new List<int>();
     for(int j=0; j< originalMap[0].Count();j++)
     {
       bool containsHashTag = false;
@@ -74,21 +82,9 @@ class Program{
       }
       if(containsHashTag==false)
       {
-        verticalPositionsToAdd.Add(j);
+        verticalSpaceExpansions.Add(j);
       }
     }
-    verticalPositionsToAdd.Reverse();
-
-
-    foreach(var lineNumber in verticalPositionsToAdd)
-    {
-      for(int i=0; i< originalMap.Count(); i++)
-      {
-        string line = originalMap[i];
-        originalMap[i] = line.Insert(lineNumber, "." );
-      }
-    }
-
-    return originalMap;
+    return verticalSpaceExpansions;
   }
 }
